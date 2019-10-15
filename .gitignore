@@ -8,6 +8,7 @@
 *.mltbx
 *.fig
 *.m
+*.mat
 # 文件夹
 imu_test
 Oxford
