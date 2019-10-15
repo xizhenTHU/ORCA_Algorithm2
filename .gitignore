@@ -7,7 +7,7 @@
 *.prj
 *.mltbx
 *.fig
-*.m
+# *.m
 *.mat
 # 文件夹
 imu_test
