@@ -1,0 +1,19 @@
+# 后缀
+*.pdf
+*.csv
+*.xlsx
+*.png
+*.7z
+*.prj
+*.mltbx
+*.fig
+*.m
+# 文件夹
+imu_test
+Oxford
+Lidar
+johnyf-fig2u3d-74fe75d
+北京数据
+# 具体文件
+imu_1565259039.001010
+dd*.txt

@@ -1,0 +1,94 @@
+            aheadAmount=00;
+            index_RealSense=app.indexStart.realsense+aheadAmount;
+            index_MiliRadar=app.indexStart.miliRadar+aheadAmount;
+            app.indexStart.imu=app.indexStart.imu+aheadAmount;
+            
+            for index_imu=app.indexStart.imu:length(app.imuData)
+%             for index_imu=index_RealSense:length(app.dirDeepth)
+                if app.StopFlag == true
+                    app.StopFlag = false;
+                    break
+                end
+                %Yaw输出
+                app.YawGauge.Value=app.imuData(index_imu,1);
+                pause(1.e-5)
+                %RealSense输出
+                if mod(index_imu-app.indexStart.imu,2)==1
+                    nameRGB=[app.dirRGB(index_RealSense).folder,'\',app.dirRGB(index_RealSense).name];
+                    nameDeepth=[app.dirDeepth(index_RealSense).folder,'\',app.dirDeepth(index_RealSense).name];
+                    ImRGB=imresize(imread(nameRGB),185/720);
+                    ImDeepth=imresize(imread(nameDeepth),185/720);
+                    image(app.RGBPic,ImRGB);set(app.RGBPic,'Xtick',[],'Ytick',[]);
+                    image(app.DeepPic,ImDeepth);set(app.DeepPic,'Xtick',[],'Ytick',[]);
+                    index_RealSense=index_RealSense+1;    
+                end
+                if mod(index_imu-app.indexStart.imu,6)==5
+%                 if mod(index_imu-app.indexStart.realsense,3)==2
+                    %毫米波雷达1
+                    datacut=app.MiliRadarData1{index_MiliRadar};
+                    if datacut==0
+                        cla(app.MillimeterWaveRadar1);
+                    else
+                        color=zeros(size(datacut,1),1);
+                        for jj=1:size(datacut,1)
+                            color(jj)=norm(datacut(jj,1:3));
+                        end
+                        scatter3(app.MillimeterWaveRadar1,datacut(:,1),datacut(:,2),datacut(:,3),5,color,'filled');
+                        pause(1.e-5)
+                    end
+                    
+                    %毫米波雷达2
+                    datacut=app.MiliRadarData2{index_MiliRadar};
+                    if datacut==0
+                        cla(app.MillimeterWaveRadar2);
+                    else
+                        color=zeros(size(datacut,1),1);
+                        for jj=1:size(datacut,1)
+                            color(jj)=norm(datacut(jj,1:3));
+                        end
+                        scatter3(app.MillimeterWaveRadar2,datacut(:,1),datacut(:,2),datacut(:,3),5,color,'filled');
+                        pause(1.e-5)
+                    end
+
+                    %毫米波雷达3
+                    datacut=app.MiliRadarData3{index_MiliRadar};
+                    if datacut==0
+                        cla(app.MillimeterWaveRadar2);
+                    else
+                        color=zeros(size(datacut,1),1);
+                        for jj=1:size(datacut,1)
+                            color(jj)=norm(datacut(jj,1:3));
+                        end
+                        scatter3(app.MillimeterWaveRadar3,datacut(:,1),datacut(:,2),datacut(:,3),5,color,'filled');
+                        pause(1.e-5)
+                    end
+                    
+                    %毫米波雷达4
+                    datacut=app.MiliRadarData4{index_MiliRadar};
+                    if datacut==0
+                        cla(app.MillimeterWaveRadar2);
+                    else
+                        color=zeros(size(datacut,1),1);
+                        for jj=1:size(datacut,1)
+                            color(jj)=norm(datacut(jj,1:3));
+                        end
+                        %x,y数据反向
+                        scatter3(app.MillimeterWaveRadar4,datacut(:,2),datacut(:,1),datacut(:,3),5,color,'filled');
+                        pause(1.e-5)
+                    end
+
+                    index_MiliRadar=index_MiliRadar+1;
+                    %hold on;
+                    %OriginArrow([-15,-15,-15],5);%绘制箭头
+                    %hold off;
+                    %view(az,el)%视角控制
+                    %set(h1,'Selected','Off');
+                    %set(axes1,'Color',[0 0 0]);grid(axes1,'off');
+                end
+                if mod(index_MiliRadar-app.indexStart.miliRadar,4)==3
+%                 if mod(index_MiliRadar-app.indexStart.miliRadar,8)==7
+%                     index_MiliRadar=index_MiliRadar+1;
+                    index_RealSense=index_RealSense+1;
+                end
+                pause(0.001)
+            end
