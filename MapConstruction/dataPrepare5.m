@@ -3,6 +3,7 @@
 clear;close all
 selpath='C:\工程文件\ORCA\squr\1570894192.500';
 selpath='F:\缓存\squr\1570894192.500';
+selpath='F:\缓存\1570891368.000';
 
 data.indexLidarCSV=1;
 %%加载并处理realsense数据
@@ -112,11 +113,13 @@ data.TimeNum.lidar=lidarTimeNum;
 clear miliRadarTimeNum realsenseTimeNum
 
 data.indexLidarCSV=data.indexLidarCSV+1;
+timeStop=data.TimeNum.imu(end)-0.5;
+disp(['共采集',num2str(timeStop),'秒数据'])
 
 % aheadSec=56.5;%跳过的秒数
 % stopSec=170-50;%中止秒数
-aheadSec=66;%跳过的秒数
-stopSec=180;%中止秒数
+aheadSec=0;%跳过的秒数
+stopSec=timeStop;%中止秒数
 
 %计算yaw补偿角
 temp=diff(data.imuData.gpsYaw);
@@ -227,7 +230,7 @@ for index_realsense=index_realsense:length(data.TimeNum.realsense)
     end
     
     if temp_dist>=0.1
-%         data=calLidarAbs(data,index_lidar,index_gps,index_imu);
+        data=calLidarAbs(data,index_lidar,index_gps,index_imu);
         data = calMiliRadarAbs(data,index_miliRadar,index_gps,index_imu);
         temp_dist=0;
     end
