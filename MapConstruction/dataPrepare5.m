@@ -3,9 +3,14 @@
 clear;close all
 selpath='C:\工程文件\ORCA\squr\1570894192.500';
 selpath='F:\缓存\squr\1570894192.500';
-selpath='F:\缓存\1570891368.000';
+% selpath='F:\缓存\1570891368.000';
 
 data.indexLidarCSV=1;
+%数据预定义
+data.LidarData = struct('x_abs',[],'y_abs',[],'z_abs',[],'reflectivity_abs',[]);
+data.MiliRadarDataAbs.left = struct('x_abs',[],'y_abs',[],'z_abs',[],'reflectivity',[]);
+data.MiliRadarDataAbs.right = struct('x_abs',[],'y_abs',[],'z_abs',[],'reflectivity',[]);
+data.MiliRadarDataAbs.front = struct('x_abs',[],'y_abs',[],'z_abs',[],'reflectivity',[],'v',[]);
 %%加载并处理realsense数据
 [timeRealSense,realsenseTimeNum,data] = loadRealSenseData(selpath,data);
 disp('realsense数据加载完毕!');
@@ -53,9 +58,6 @@ end
 lidarTimeNum=lidarTimeNum-lidarTimeNum(lidarIndexStart);
 lidarTimeNum(1:lidarIndexStart-1,:)=[];
 
-
-
-
 %数据对准
 data.MiliRadarData1(1:miliRadarIndexStart-1,:)=[];
 data.MiliRadarData2(1:miliRadarIndexStart-1,:)=[];
@@ -69,21 +71,10 @@ AngleVertical(1:lidarIndexStart-1,:)=[];
 data.LidarData.dist(1:lidarIndexStart-1,:)=[];
 data.LidarData.reflectivity(1:lidarIndexStart-1,:)=[];
 
-
+%激光雷达数据坐标解析
 data.LidarData.z=data.LidarData.dist.*sind(AngleVertical);
 data.LidarData.x=-data.LidarData.dist.*cosd(AngleVertical).*cosd(data.LidarData.AngleHorizontal);
 data.LidarData.y=data.LidarData.dist.*cosd(AngleVertical).*sind(data.LidarData.AngleHorizontal);
-
-%数据预定义
-data.LidarData.x_abs=[];
-data.LidarData.y_abs=[];
-data.LidarData.z_abs=[];
-data.LidarData.reflectivity_abs=[];
-data.MiliRadarDataAbs.x_abs=[];
-data.MiliRadarDataAbs.y_abs=[];
-data.MiliRadarDataAbs.z_abs=[];
-data.MiliRadarDataAbs.reflectivity_abs=[];
-
 
 %激光雷达数据分帧
 [~,ia,~] = unique(lidarTimeNum);
@@ -116,9 +107,7 @@ data.indexLidarCSV=data.indexLidarCSV+1;
 timeStop=data.TimeNum.imu(end)-0.5;
 disp(['共采集',num2str(timeStop),'秒数据'])
 
-% aheadSec=56.5;%跳过的秒数
-% stopSec=170-50;%中止秒数
-aheadSec=0;%跳过的秒数
+aheadSec=66;%跳过的秒数
 stopSec=timeStop;%中止秒数
 
 %计算yaw补偿角
@@ -200,13 +189,11 @@ for index_realsense=index_realsense:length(data.TimeNum.realsense)
     if data.TimeNum.imu(index_imu)<=data.TimeNum.realsense(index_realsense)
         index_imu=index_imu+1;
     end
-    %plotTansformCuber(data,data.imuData.yaw(index_imu),data.imuData.pitch(index_imu),data.imuData.roll(index_imu))
     
     %GPS轨迹
     %数据调用格式:data.gpsData.lat,data.gpsData.lng 或者 data.gpsData.xEast,data.gpsData.yNorth
     if data.TimeNum.gps(index_gps)<=data.TimeNum.realsense(index_realsense)
         temp_dist=temp_dist+data.gpsData.dist(index_gps);
-        %plot(data.GPSRoute,data.gpsData.xEast(index_gps),data.gpsData.yNorth(index_gps),'.b');
         pause(1.e-5)
         index_gps=index_gps+1;
     end
@@ -218,7 +205,7 @@ for index_realsense=index_realsense:length(data.TimeNum.realsense)
     %毫米波输出
     %数据存为cell
     %数据调用格式:data.MiliRadarData1,data.MiliRadarData2,data.MiliRadarData3
-    %顺序 123 分别对应 右前左
+    %顺序 123 分别对应 前右左
     if data.TimeNum.miliRadar(index_miliRadar)<=data.TimeNum.realsense(index_realsense)
         %plotMiliRadar(data,index_miliRadar,axes_mili_front,axes_mili_left,axes_mili_right);
         index_miliRadar=index_miliRadar+1;
@@ -238,36 +225,71 @@ for index_realsense=index_realsense:length(data.TimeNum.realsense)
     
 end
 
-
-% figure;scatter3(data.LidarData.x_abs,data.LidarData.y_abs,data.LidarData.z_abs,...
-%     1,data.LidarData.z_abs,'filled');axis equal
+% 激光雷达与GPS
 figure;scatter3(data.LidarData.x_abs,data.LidarData.y_abs,data.LidarData.z_abs,...
-    1,data.LidarData.reflectivity_abs,'filled');caxis([min(data.LidarData.reflectivity_abs),120])
+    1,data.LidarData.reflectivity_abs,'filled');caxis([min(data.LidarData.reflectivity_abs),120]);hold on;
+plot3(data.gpsData.xEast,data.gpsData.yNorth,zeros(size(data.gpsData.yNorth)),'.-');axis equal
 xlabel('东 /m');ylabel('北 /m');zlabel('z /m');axis equal
 
-figure;scatter3(data.MiliRadarDataAbs.x_abs,data.MiliRadarDataAbs.y_abs,data.MiliRadarDataAbs.z_abs,...
-    3,data.MiliRadarDataAbs.reflectivity_abs,'filled');hold on
+% 毫米波雷达与GPS
+figure;scatter3(data.MiliRadarDataAbs.front.x_abs,data.MiliRadarDataAbs.front.y_abs,...
+    data.MiliRadarDataAbs.front.z_abs,3,data.MiliRadarDataAbs.front.reflectivity,'filled');hold on
+scatter3(data.MiliRadarDataAbs.left.x_abs,data.MiliRadarDataAbs.left.y_abs,...
+    data.MiliRadarDataAbs.left.z_abs,3,data.MiliRadarDataAbs.left.reflectivity,'filled');
+scatter3(data.MiliRadarDataAbs.right.x_abs,data.MiliRadarDataAbs.right.y_abs,...
+    data.MiliRadarDataAbs.right.z_abs,3,data.MiliRadarDataAbs.right.reflectivity,'filled');
 plot3(data.gpsData.xEast,data.gpsData.yNorth,zeros(size(data.gpsData.yNorth)),'.-');axis equal
-caxis([min(data.MiliRadarDataAbs.reflectivity_abs),160])
-xlabel('东 /m');ylabel('北 /m');zlabel('z /m');axis equal
+caxis([100,160]);xlabel('东 /m');ylabel('北 /m');zlabel('z /m');axis equal
 
+% 激光雷达,毫米波雷达与GPS
 figure;scatter3(data.LidarData.x_abs,data.LidarData.y_abs,data.LidarData.z_abs,...
-    1,data.LidarData.reflectivity_abs,'filled');caxis([min(data.LidarData.reflectivity_abs),120])
-hold on;scatter3(data.MiliRadarDataAbs.x_abs,data.MiliRadarDataAbs.y_abs,data.MiliRadarDataAbs.z_abs,...
-    5,'r','filled');xlabel('东 /m');ylabel('北 /m');zlabel('z /m');
+    1,data.LidarData.reflectivity_abs,'filled');
+hold on;scatter3(data.MiliRadarDataAbs.front.x_abs,data.MiliRadarDataAbs.front.y_abs,...
+    data.MiliRadarDataAbs.front.z_abs,3,data.MiliRadarDataAbs.front.reflectivity,'filled');hold on
+scatter3(data.MiliRadarDataAbs.left.x_abs,data.MiliRadarDataAbs.left.y_abs,...
+    data.MiliRadarDataAbs.left.z_abs,3,data.MiliRadarDataAbs.left.reflectivity,'filled');
+scatter3(data.MiliRadarDataAbs.right.x_abs,data.MiliRadarDataAbs.right.y_abs,...
+    data.MiliRadarDataAbs.right.z_abs,3,data.MiliRadarDataAbs.right.reflectivity,'filled');
 plot3(data.gpsData.xEast,data.gpsData.yNorth,zeros(size(data.gpsData.yNorth)),'.-');axis equal
+caxis([min(data.LidarData.reflectivity_abs),120]);xlabel('东 /m');ylabel('北 /m');zlabel('z /m');
 
+%GPS
 figure;plot(data.gpsData.xEast,data.gpsData.yNorth,'.-');xlabel('东 /m');ylabel('北 /m');axis equal
 
 % figure;plot(data.TimeNum.imu,data.imuData.mode);
 % sum(data.imuData.mode==2)/length(data.imuData.mode)
-% figure;histogram(data.MiliRadarDataAbs.reflectivity_abs,'Normalization','cdf')
+% figure;histogram(data.MiliRadarDataAbs.reflectivity,'Normalization','cdf')
 
+%IMU
 figure;plot(data.TimeNum.imu,[data.imuData.yaw,data.imuData.roll,data.imuData.pitch,data.imuData.gpsYaw],'.-');
 legend('yaw','roll','pitch','gpsYaw')
 
 % figure;yyaxis left;plot(data.TimeNum.imu,data.imuData.yaw,'.-');hold on;
 % yyaxis right;plot(data.TimeNum.gps,[data.gpsData.xEast,data.gpsData.yNorth],'.-')
 % legend('yaw','xEast','yNorth')
+
+% 数据存储
+[status, msg, msgID] = mkdir('dataSave');
+LidarDataX=data.LidarData.x_abs;
+LidarDataY=data.LidarData.y_abs;
+LidarDataZ=data.LidarData.z_abs;
+LidarDataP=data.LidarData.reflectivity_abs;
+save([pwd,'\dataSave\lidar.mat'],'LidarDataX','LidarDataY','LidarDataZ','LidarDataP')
+RadarX_right=data.MiliRadarDataAbs.right.x_abs;
+RadarY_right=data.MiliRadarDataAbs.right.y_abs;
+RadarZ_right=data.MiliRadarDataAbs.right.z_abs;
+RadarP_right=data.MiliRadarDataAbs.right.reflectivity;
+save([pwd,'\dataSave\radar_right.mat'],'RadarX_right','RadarY_right','RadarZ_right','RadarP_right')
+RadarX_left=data.MiliRadarDataAbs.left.x_abs;
+RadarY_left=data.MiliRadarDataAbs.left.y_abs;
+RadarZ_left=data.MiliRadarDataAbs.left.z_abs;
+RadarP_left=data.MiliRadarDataAbs.left.reflectivity;
+save([pwd,'\dataSave\radar_left.mat'],'RadarX_right','RadarY_right','RadarZ_right','RadarP_right')
+RadarX_front=data.MiliRadarDataAbs.front.x_abs;
+RadarY_front=data.MiliRadarDataAbs.front.y_abs;
+RadarZ_front=data.MiliRadarDataAbs.front.z_abs;
+RadarV_front=data.MiliRadarDataAbs.front.v;
+RadarP_front=data.MiliRadarDataAbs.front.reflectivity;
+save([pwd,'\dataSave\radar_front.mat'],'RadarX_right','RadarY_right','RadarZ_right','RadarP_right')
 
 % csvwrite('LidarAnalysisData.csv',[data.LidarData.x_abs,data.LidarData.y_abs,data.LidarData.z_abs,data.LidarData.reflectivity_abs])
