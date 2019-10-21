@@ -5,6 +5,7 @@
 *.png
 *.jpg
 *.7z
+*.zip
 *.prj
 *.mltbx
 *.fig
@@ -16,6 +17,7 @@ imu_test
 Oxford
 Lidar
 johnyf-fig2u3d-74fe75d
+路径规划/LaserSLAM-master
 北京数据
 # 具体文件
 imu_1565259039.001010

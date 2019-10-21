@@ -1,15 +1,15 @@
 %GUI改制
 %2019.10.12修改 与新imu搭配,以realsense为基准
 clear;close all
-selpath='C:\工程文件\ORCA\squr\1570894192.500';
-selpath='F:\缓存\squr\1570894192.500';
-% selpath='F:\缓存\1570891368.000';
+selpath='F:\缓存\squr\1570894192.500';% 广场
+selpath='F:\缓存\1570891368.000';% 科技大楼
 
 data.indexLidarCSV=1;
 %数据预定义
 data.LidarData = struct('x_abs',[],'y_abs',[],'z_abs',[],'reflectivity_abs',[]);
-data.MiliRadarDataAbs.left = struct('x_abs',[],'y_abs',[],'z_abs',[],'reflectivity',[]);
-data.MiliRadarDataAbs.right = struct('x_abs',[],'y_abs',[],'z_abs',[],'reflectivity',[]);
+data.MiliRadarDataAbs.left = struct('x_abs',[],'y_abs',[],'z_abs',[],'reflectivity',[],'v',[]);
+% data.MiliRadarDataAbs.right = struct('x_abs',[],'y_abs',[],'z_abs',[],'reflectivity',[],'v',[],'timenum',[],'lat',[],'lng',[],'xEast',[],'yNorth',[]);
+data.MiliRadarDataAbs.right = struct('x_abs',[],'y_abs',[],'z_abs',[],'reflectivity',[],'v',[]);
 data.MiliRadarDataAbs.front = struct('x_abs',[],'y_abs',[],'z_abs',[],'reflectivity',[],'v',[]);
 %%加载并处理realsense数据
 [timeRealSense,realsenseTimeNum,data] = loadRealSenseData(selpath,data);
@@ -107,7 +107,7 @@ data.indexLidarCSV=data.indexLidarCSV+1;
 timeStop=data.TimeNum.imu(end)-0.5;
 disp(['共采集',num2str(timeStop),'秒数据'])
 
-aheadSec=66;%跳过的秒数
+aheadSec=0;%跳过的秒数
 stopSec=timeStop;%中止秒数
 
 %计算yaw补偿角

@@ -80,6 +80,7 @@ if size(datacut,1)~=1 && size(datacut,2)~=1
     data.MiliRadarDataAbs.left.x_abs=[data.MiliRadarDataAbs.left.x_abs;temp_x_abs];
     data.MiliRadarDataAbs.left.y_abs=[data.MiliRadarDataAbs.left.y_abs;temp_y_abs];
     data.MiliRadarDataAbs.left.z_abs=[data.MiliRadarDataAbs.left.z_abs;temp_z_abs];
+    data.MiliRadarDataAbs.left.v=[data.MiliRadarDataAbs.left.v;datacut(:,4)];
     data.MiliRadarDataAbs.left.reflectivity=[data.MiliRadarDataAbs.left.reflectivity;datacut(:,5)];
 end
 
@@ -106,7 +107,13 @@ if size(datacut,1)~=1 && size(datacut,2)~=1
     data.MiliRadarDataAbs.right.x_abs=[data.MiliRadarDataAbs.right.x_abs;temp_x_abs];
     data.MiliRadarDataAbs.right.y_abs=[data.MiliRadarDataAbs.right.y_abs;temp_y_abs];
     data.MiliRadarDataAbs.right.z_abs=[data.MiliRadarDataAbs.right.z_abs;temp_z_abs];
+    data.MiliRadarDataAbs.right.v=[data.MiliRadarDataAbs.right.v;datacut(:,4)];
     data.MiliRadarDataAbs.right.reflectivity=[data.MiliRadarDataAbs.right.reflectivity;datacut(:,5)];
+%     data.MiliRadarDataAbs.right.timenum=[data.MiliRadarDataAbs.right.timenum;data.TimeNum.imu(index_imu)*ones(size(temp_z_abs))];
+%     data.MiliRadarDataAbs.right.lat=[data.MiliRadarDataAbs.right.lat;data.gpsData.lat(index_gps)*ones(size(temp_z_abs))];
+%     data.MiliRadarDataAbs.right.lng=[data.MiliRadarDataAbs.right.lng;data.gpsData.lng(index_gps)*ones(size(temp_z_abs))];
+%     data.MiliRadarDataAbs.right.xEast=[data.MiliRadarDataAbs.right.xEast;data.gpsData.xEast(index_gps)*ones(size(temp_z_abs))];
+%     data.MiliRadarDataAbs.right.yNorth=[data.MiliRadarDataAbs.right.yNorth;data.gpsData.yNorth(index_gps)*ones(size(temp_z_abs))];
 end
 
 end
